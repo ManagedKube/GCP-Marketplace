@@ -1,0 +1,38 @@
+applicationApiVersion: v1beta1
+
+properties:
+  name:
+    type: string
+    x-google-marketplace:
+     type: NAME
+  namespace:
+    type: string
+    x-google-marketplace:
+      type: NAMESPACE
+  reportingSecret:
+    type: string
+    x-google-marketplace:
+      type: REPORTING_SECRET
+  billingImage:
+    type: string
+    default: gcr.io/managedkube/kubernetes-cost-attribution:1.0
+    x-google-marketplace:
+      type: IMAGE
+  ubbAgentImage:
+    type: string
+    default: gcr.io/managedkube/kubernetes-cost-attribution/ubbagent:1.0
+    x-google-marketplace:
+      type: IMAGE
+  controller.serviceAccount:
+    type: string
+    x-google-marketplace:
+      type: SERVICE_ACCOUNT
+      serviceAccount:
+        roles:
+        - type: ClusterRole
+          rulesType: PREDEFINED
+          rulesFromRoleName: cluster-admin
+required:
+- name
+- namespace
+- controller.serviceAccount

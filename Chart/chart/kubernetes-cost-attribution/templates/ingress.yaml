@@ -1,0 +1,28 @@
+{{ if .Values.grafana.ingress.enable }}
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ .Values.namePrefix }}-grafana
+  namespace: {{ .Values.namespace }}
+  annotations:
+    kubernetes.io/ingress.class: "{{ .Values.grafana.ingress.ingressClass }}"
+    # Setup Let's Encrypt Certificates
+    kubernetes.io/tls-acme: "{{ .Values.grafana.ingress.enableTlsAcme }}"
+    {{ if .Values.grafana.ingress.annotations.enable }}
+    nginx.ingress.kubernetes.io/whitelist-source-range: "{{ .Values.grafana.ingress.annotations.whitelistSourceRange }}"
+    {{ end }}
+spec:
+  tls:
+  - hosts:
+    - "{{ .Values.grafana.ingress.hostname }}"
+    secretName: {{ .Values.namePrefix }}-grafana-tls
+  rules:
+  - host: "{{ .Values.grafana.ingress.hostname }}"
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: {{ .Values.namePrefix }}-grafana
+          servicePort: 3000
+{{ end }}

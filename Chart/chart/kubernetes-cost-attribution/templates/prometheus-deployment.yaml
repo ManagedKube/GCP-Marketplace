@@ -1,0 +1,91 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.namePrefix }}-prometheus
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      name: prometheus
+      labels:
+        app: prometheus
+    spec:
+      {{ if .Values.enableRBAC }}
+      serviceAccountName: {{ .Values.namePrefix }}-prometheus
+      {{ end }}
+      {{ if .Values.enableRBACGoogleMarketPlace }}
+      serviceAccountName: {{ .Values.controller.serviceAccount }}
+      {{ end }}
+      terminationGracePeriodSeconds: 300
+      # nodeSelector:
+      #   k8s.info/application: infrastructure
+
+      initContainers:
+      - name: init-directory
+        image: busybox
+        imagePullPolicy: Always
+        command:
+        - "sh"
+        - "-c"
+        - "mkdir -p /data/prometheus-data; chmod -R 777 /data/prometheus-data;"
+        volumeMounts:
+        - name: datadir
+          mountPath: /data
+
+      containers:
+      - name: prometheus
+        image: "{{ .Values.prometheus.image.repository }}:{{ .Values.prometheus.image.tag }}"
+        imagePullPolicy: "{{ .Values.prometheus.image.pullPolicy }}"
+        args: [
+          "--config.file=/etc/prometheus/config/config.yml",
+          "--web.enable-lifecycle",
+          "--storage.tsdb.path=/data/prometheus-data",
+          "--storage.tsdb.retention={{ .Values.prometheus.dataRetention }}",
+        ]
+        ports:
+        - name: web
+          containerPort: 9090
+        resources:
+          limits:
+            cpu: {{ .Values.prometheus.resources.limits.cpu }}
+            memory: {{ .Values.prometheus.resources.limits.memory }}
+          requests:
+            cpu: {{ .Values.prometheus.resources.requests.cpu }}
+            memory: {{ .Values.prometheus.resources.requests.memory }}
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 9090
+            scheme: HTTP
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 5
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 9090
+            scheme: HTTP
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        volumeMounts:
+        - name: config
+          mountPath: /etc/prometheus/config
+        - name: datadir
+          mountPath: /data
+      volumes:
+      - name: config
+        configMap:
+          name: {{ .Values.namePrefix }}-prometheus-config
+      - name: datadir
+        persistentVolumeClaim:
+          claimName: {{ .Values.namePrefix }}-data
