@@ -1,10 +1,8 @@
-Kubernetes Cost Attribution
+ManagedKube Kubernetes Cost Attribution
 ===========================
 
 # Overview
-Kubernetes Cost Attribution is an application to help you attribute the cost of what
-each namespace is accruing based on the pods that are running in that namespace
-and the nodes it is using.
+ManagedKube’s Kubernetes Cost Attribution is an application to help you understand the cost of your Kubernetes clusters, from what each namespace or pod costs to how much disks or network traffic in the cluster costs, so you can manage your budget and optimize your cloud spend.
 
 
 # Installation
