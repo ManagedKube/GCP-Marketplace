@@ -31,7 +31,7 @@ Follow these instructions to install `Kubernetes Cost Attribution` from the comm
 
 Expand manifest template:
 ```
-cd ./Chart/kubernetes-cost-attribution
+cd ./Chart/chart/kubernetes-cost-attribution/
 helm template . > expanded.yaml
 ```
 
